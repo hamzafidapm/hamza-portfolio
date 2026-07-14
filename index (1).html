@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamza Fida — Performance Marketer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0a0a;
+    --bg-elev: #141412;
+    --bg-elev-2: #1b1b18;
+    --border: #2b2a25;
+    --border-soft: #201f1b;
+    --gold: #e3b23c;
+    --gold-bright: #f5d06b;
+    --green: #3fbf82;
+    --text: #f2efe6;
+    --text-muted: #9c9890;
+    --text-dim: #6b675f;
+    --radius: 3px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  h1,h2,h3,h4{ font-family:'Space Grotesk', sans-serif; font-weight:600; letter-spacing:-0.02em; }
+
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  a{ color:inherit; text-decoration:none; }
+
+  ::selection{ background:var(--gold); color:#0a0a0a; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 32px; }
+
+  /* ---------- Background grid texture ---------- */
+  .grid-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(227,178,60,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(227,178,60,0.035) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+  }
+
+  /* ---------- Nav ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:rgba(10,10,10,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+  }
+  nav.wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:72px;
+  }
+  .logo{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:18px; letter-spacing:-0.01em;
+  }
+  .logo span{ color:var(--gold); }
+  .nav-links{ display:flex; gap:36px; align-items:center; }
+  .nav-links a{
+    font-size:13px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--text-muted); transition:color .2s ease;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .nav-links a:hover{ color:var(--gold); }
+  .nav-cta{
+    border:1px solid var(--gold); color:var(--gold) !important;
+    padding:9px 18px; border-radius:var(--radius);
+  }
+  .nav-cta:hover{ background:var(--gold); color:#0a0a0a !important; }
+  .menu-btn{
+    display:none; background:none; border:none; color:var(--text); cursor:pointer;
+    width:32px; height:22px; position:relative; z-index:200; padding:0;
+  }
+  .menu-btn span{
+    position:absolute; left:0; width:100%; height:2px; background:var(--text);
+    transition:all .3s ease;
+  }
+  .menu-btn span:nth-child(1){ top:0; }
+  .menu-btn span:nth-child(2){ top:10px; }
+  .menu-btn span:nth-child(3){ top:20px; }
+  .menu-btn.active span:nth-child(1){ top:10px; transform:rotate(45deg); background:var(--gold); }
+  .menu-btn.active span:nth-child(2){ opacity:0; }
+  .menu-btn.active span:nth-child(3){ top:10px; transform:rotate(-45deg); background:var(--gold); }
+
+  .nav-links a.active-link{ color:var(--gold); }
+
+  /* Scroll progress bar */
+  .scroll-progress{
+    position:fixed; top:0; left:0; height:2px; width:0%;
+    background:linear-gradient(90deg, var(--gold), var(--green));
+    z-index:200; transition:width .1s linear;
+  }
+
+  /* Back to top */
+  .back-to-top{
+    position:fixed; bottom:28px; right:28px; z-index:90;
+    width:48px; height:48px; border-radius:50%;
+    background:var(--bg-elev); border:1px solid var(--border);
+    color:var(--gold); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:18px;
+    opacity:0; pointer-events:none; transform:translateY(10px);
+    transition:all .3s ease;
+  }
+  .back-to-top.show{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  .back-to-top:hover{ border-color:var(--gold); background:var(--bg-elev-2); transform:translateY(-3px); }
+
+  @media (max-width:900px){
+    .menu-btn{ display:block; }
+    .nav-links{
+      display:flex; flex-direction:column; align-items:flex-start;
+      gap:0; position:fixed; top:0; right:0; height:100vh; width:78%; max-width:340px;
+      background:var(--bg-elev); border-left:1px solid var(--border-soft);
+      padding:100px 32px 40px; z-index:150;
+      transform:translateX(100%); transition:transform .35s ease;
+    }
+    .nav-links.open{ transform:translateX(0); }
+    .nav-links a{ width:100%; padding:18px 0; border-bottom:1px solid var(--border-soft); font-size:14px; }
+    .nav-cta{ margin-top:20px; text-align:center; }
+    .nav-overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:140;
+      opacity:0; pointer-events:none; transition:opacity .3s ease;
+    }
+    .nav-overlay.show{ opacity:1; pointer-events:auto; }
+  }
+
+  /* ---------- Testimonials ---------- */
+  .testimonial-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:var(--border-soft); border:1px solid var(--border-soft);
+  }
+  @media (max-width:900px){ .testimonial-grid{ grid-template-columns:1fr; } }
+  .testimonial-card{
+    background:var(--bg-elev); padding:36px 30px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    transition:background .3s ease, transform .3s ease;
+  }
+  .testimonial-card:hover{ background:var(--bg-elev-2); transform:translateY(-4px); }
+  .quote-mark{
+    font-family:'JetBrains Mono', monospace; font-size:36px; color:var(--gold);
+    line-height:1; margin-bottom:16px;
+  }
+  .testimonial-text{ font-size:15px; color:var(--text); line-height:1.7; margin-bottom:28px; }
+  .testimonial-footer{ display:flex; align-items:center; gap:12px; border-top:1px solid var(--border-soft); padding-top:18px; }
+  .testimonial-avatar{
+    width:38px; height:38px; border-radius:50%;
+    background:linear-gradient(135deg, var(--gold), var(--green));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-weight:700; font-size:13px; color:#0a0a0a;
+    flex-shrink:0;
+  }
+  .testimonial-name{ font-size:14px; font-weight:600; }
+  .testimonial-role{ font-size:12px; color:var(--text-dim); font-family:'JetBrains Mono', monospace; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column; justify-content:center;
+    padding-top:100px; padding-bottom:60px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--green);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:28px;
+    opacity:0; animation: fadeUp .8s ease .1s forwards;
+  }
+  .eyebrow::before{
+    content:''; width:7px; height:7px; border-radius:50%;
+    background:var(--green); box-shadow:0 0 0 4px rgba(63,191,130,0.15);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+  .hero h1{
+    font-size:clamp(40px, 7vw, 92px);
+    line-height:0.98;
+    max-width:980px;
+    opacity:0; animation: fadeUp .9s ease .2s forwards;
+  }
+  .hero h1 .accent{ color:var(--gold); font-style:normal; }
+
+  .hero-sub{
+    margin-top:28px;
+    font-size:clamp(16px, 2vw, 20px);
+    color:var(--text-muted);
+    max-width:560px;
+    opacity:0; animation: fadeUp .9s ease .35s forwards;
+  }
+
+  .hero-ctas{
+    margin-top:44px;
+    display:flex; gap:16px; flex-wrap:wrap;
+    opacity:0; animation: fadeUp .9s ease .5s forwards;
+  }
+  .btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px; letter-spacing:0.04em; text-transform:uppercase;
+    padding:16px 30px;
+    border-radius:var(--radius);
+    display:inline-flex; align-items:center; gap:10px;
+    transition:all .25s ease;
+    cursor:pointer; border:1px solid transparent;
+  }
+  .btn-primary{ background:var(--gold); color:#0a0a0a; }
+  .btn-primary:hover{ background:var(--gold-bright); transform:translateY(-2px); box-shadow:0 8px 24px rgba(227,178,60,0.25); }
+  .btn-outline{ border-color:var(--border); color:var(--text); }
+  .btn-outline:hover{ border-color:var(--gold); color:var(--gold); transform:translateY(-2px); }
+
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(18px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* Hero graph decoration */
+  .hero-graph{
+    position:absolute; right:-5%; top:12%; width:52%; max-width:640px;
+    opacity:0.9; z-index:0; pointer-events:none;
+  }
+  @media (max-width:900px){ .hero-graph{ display:none; } }
+
+  /* ---------- Stats bar ---------- */
+  .stats-bar{
+    position:relative; z-index:1;
+    border-top:1px solid var(--border-soft);
+    border-bottom:1px solid var(--border-soft);
+    background:linear-gradient(180deg, rgba(227,178,60,0.03), transparent);
+  }
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+  }
+  .stat-cell{
+    padding:38px 24px;
+    border-right:1px solid var(--border-soft);
+    text-align:left;
+  }
+  .stat-cell:last-child{ border-right:none; }
+  .stat-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:clamp(24px,3vw,36px);
+    font-weight:700;
+    color:var(--gold);
+    display:flex; align-items:baseline; gap:2px;
+  }
+  .stat-num.green{ color:var(--green); }
+  .stat-label{
+    margin-top:8px;
+    font-size:12.5px;
+    color:var(--text-muted);
+    letter-spacing:0.02em;
+    line-height:1.4;
+  }
+  @media (max-width:900px){
+    .stats-grid{ grid-template-columns:repeat(2,1fr); }
+    .stat-cell{ border-bottom:1px solid var(--border-soft); }
+    .stat-cell:nth-child(odd){ border-right:1px solid var(--border-soft); }
+  }
+
+  /* ---------- Section shared ---------- */
+  section{ position:relative; z-index:1; padding:120px 0; }
+  .section-head{ margin-bottom:64px; }
+  .section-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:16px; display:block;
+  }
+  .section-head h2{ font-size:clamp(30px,4vw,46px); max-width:640px; }
+  .section-head p{ margin-top:16px; color:var(--text-muted); max-width:520px; font-size:16px; }
+
+  .reveal{ opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+
+  /* ---------- Case studies ---------- */
+  .case-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+  }
+  @media (max-width:900px){ .case-grid{ grid-template-columns:1fr; } }
+
+  .case-card{
+    background:var(--bg-elev);
+    padding:36px 30px;
+    transition:background .3s ease, transform .3s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .case-card::before{
+    content:''; position:absolute; top:0; left:0; width:0; height:2px;
+    background:var(--gold); transition:width .35s ease;
+  }
+  .case-card:hover{ background:var(--bg-elev-2); transform:translateY(-4px); }
+  .case-card:hover::before{ width:100%; }
+
+  .case-index{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px; color:var(--text-dim); margin-bottom:20px;
+  }
+  .case-card h3{ font-size:19px; margin-bottom:22px; line-height:1.3; min-height:50px; }
+
+  .case-metric-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:10px 0; border-top:1px solid var(--border-soft);
+    font-size:13.5px;
+  }
+  .case-metric-row:first-of-type{ border-top:1px solid var(--border-soft); }
+  .case-metric-label{ color:var(--text-muted); }
+  .case-metric-val{ font-family:'JetBrains Mono', monospace; font-weight:600; color:var(--text); }
+  .case-metric-val.gold{ color:var(--gold); }
+  .case-metric-val.green{ color:var(--green); }
+
+  .flow-line{
+    display:flex; align-items:center; gap:10px;
+    margin-top:20px; padding-top:18px; border-top:1px dashed var(--border);
+    font-family:'JetBrains Mono', monospace; font-size:14px;
+  }
+  .flow-line .spend{ color:var(--text-muted); }
+  .flow-line .arrow{ color:var(--gold); }
+  .flow-line .rev{ color:var(--green); font-weight:700; }
+
+  /* ---------- Skills ---------- */
+  .skills-layout{ display:grid; grid-template-columns:1fr 1fr; gap:64px; }
+  @media (max-width:900px){ .skills-layout{ grid-template-columns:1fr; gap:48px; } }
+  .skill-list{ display:flex; flex-direction:column; }
+  .skill-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 0; border-bottom:1px solid var(--border-soft);
+    font-size:16px;
+  }
+  .skill-row span.n{ font-family:'JetBrains Mono', monospace; color:var(--text-dim); font-size:12px; margin-right:16px; }
+  .skill-row .name{ display:flex; align-items:center; }
+
+  .tools-cloud{ display:flex; flex-wrap:wrap; gap:12px; align-content:flex-start; }
+  .tool-chip{
+    font-family:'JetBrains Mono', monospace; font-size:13px;
+    border:1px solid var(--border); color:var(--text-muted);
+    padding:10px 16px; border-radius:20px;
+    transition:all .25s ease;
+  }
+  .tool-chip:hover{ border-color:var(--gold); color:var(--gold); }
+
+  /* ---------- Education / Certs ---------- */
+  .edu-grid{ display:grid; grid-template-columns:1fr 1.4fr; gap:64px; }
+  @media (max-width:900px){ .edu-grid{ grid-template-columns:1fr; gap:48px; } }
+  .edu-card{ border-left:2px solid var(--gold); padding-left:24px; }
+  .edu-card h4{ font-size:20px; margin-bottom:8px; }
+  .edu-card .school{ color:var(--text-muted); font-size:14.5px; margin-bottom:6px; }
+  .edu-card .years{ font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--gold); }
+
+  .cert-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:20px 0; border-bottom:1px solid var(--border-soft);
+  }
+  .cert-item:first-child{ border-top:1px solid var(--border-soft); }
+  .cert-name{ font-size:15.5px; }
+  .cert-issuer{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; }
+
+  /* ---------- Contact ---------- */
+  .contact-section{
+    background:linear-gradient(180deg, transparent, rgba(227,178,60,0.04));
+    border-top:1px solid var(--border-soft);
+  }
+  .contact-inner{ text-align:center; max-width:680px; margin:0 auto; }
+  .contact-inner .section-tag{ justify-content:center; }
+  .contact-inner h2{ font-size:clamp(32px,5vw,56px); }
+  .contact-inner p{ margin:20px auto 0; color:var(--text-muted); max-width:460px; }
+  .contact-ctas{ margin-top:44px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+
+  footer{
+    border-top:1px solid var(--border-soft);
+    padding:32px 0;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    color:var(--text-dim);
+  }
+
+  @media (max-width:640px){
+    .wrap{ padding:0 20px; }
+    section{ padding:80px 0; }
+    .nav-links{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="nav-overlay" id="navOverlay"></div>
+
+<header>
+  <nav class="wrap">
+    <div class="logo">HAMZA<span>.</span>FIDA</div>
+    <div class="nav-links" id="navLinks">
+      <a href="#results" data-nav>Results</a>
+      <a href="#work" data-nav>Case Studies</a>
+      <a href="#testimonials" data-nav>Testimonials</a>
+      <a href="#skills" data-nav>Skills</a>
+      <a href="#about" data-nav>Background</a>
+      <a href="#contact" class="nav-cta" data-nav>Contact</a>
+    </div>
+    <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+</header>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<section class="hero">
+  <svg class="hero-graph" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e3b23c" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#e3b23c" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 220 L40 205 L80 215 L120 160 L160 175 L200 110 L240 130 L280 60 L320 80 L360 20 L400 30" stroke="#3fbf82" stroke-width="2" fill="none" opacity="0.5"/>
+    <path id="mainLine" d="M0 240 L40 230 L80 235 L120 190 L160 200 L200 150 L240 165 L280 100 L320 115 L360 45 L400 55 L400 260 L0 260 Z" fill="url(#fillGrad)"/>
+    <path d="M0 240 L40 230 L80 235 L120 190 L160 200 L200 150 L240 165 L280 100 L320 115 L360 45 L400 55" stroke="#e3b23c" stroke-width="2.5" fill="none"/>
+    <circle cx="400" cy="55" r="5" fill="#e3b23c"/>
+  </svg>
+
+  <div class="wrap">
+    <span class="eyebrow">Available for remote engagements</span>
+    <h1>I Don't Run Ads.<br>I <span class="accent">Scale</span> Businesses.</h1>
+    <p class="hero-sub">Performance marketer delivering exceptional ROAS across e-commerce, skincare and high-ticket niches — turning ad spend into measurable, repeatable revenue.</p>
+    <div class="hero-ctas">
+      <a href="#work" class="btn btn-primary">See My Results →</a>
+      <a href="#contact" class="btn btn-outline">Contact Me</a>
+    </div>
+  </div>
+</section>
+
+<div class="stats-bar" id="results">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat-cell reveal">
+        <div class="stat-num gold"><span class="counter" data-target="11.45" data-decimals="2">0</span>x</div>
+        <div class="stat-label">Best ROAS Achieved</div>
+      </div>
+      <div class="stat-cell reveal">
+        <div class="stat-num gold"><span class="counter" data-target="9.19" data-decimals="2">0</span>x</div>
+        <div class="stat-label">ROAS in Skincare Niche</div>
+      </div>
+      <div class="stat-cell reveal">
+        <div class="stat-num green">$<span class="counter" data-target="4600" data-decimals="0">0</span>+</div>
+        <div class="stat-label">Sales in a Single 7‑Day Run</div>
+      </div>
+      <div class="stat-cell reveal">
+        <div class="stat-num green">$<span class="counter" data-target="3300" data-decimals="0">0</span>+</div>
+        <div class="stat-label">Net Profit in 7 Days</div>
+      </div>
+      <div class="stat-cell reveal">
+        <div class="stat-num gold"><span class="counter" data-target="230000" data-decimals="0">0</span>+</div>
+        <div class="stat-label">Total Ad Impressions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="work">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">Case Studies</span>
+      <h2>Campaigns, broken down to the numbers that matter.</h2>
+      <p>Every campaign below ran with a real budget, a real deadline and a real client watching the dashboard. Here's what happened.</p>
+    </div>
+
+    <div class="case-grid">
+
+      <div class="case-card reveal">
+        <div class="case-index">CS / 01 — META ADS</div>
+        <h3>High-Conversion Meta Ads Campaign</h3>
+        <div class="case-metric-row"><span class="case-metric-label">Website purchases</span><span class="case-metric-val">79</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Impressions</span><span class="case-metric-val">230K+</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Cost per purchase</span><span class="case-metric-val gold">PKR 626</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Reach</span><span class="case-metric-val">144,258</span></div>
+      </div>
+
+      <div class="case-card reveal">
+        <div class="case-index">CS / 02 — SKINCARE</div>
+        <h3>Skincare Brand — High ROI Campaign</h3>
+        <div class="case-metric-row"><span class="case-metric-label">ROAS</span><span class="case-metric-val gold">9.19x</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Purchases</span><span class="case-metric-val">26</span></div>
+        <div class="flow-line">
+          <span class="spend">PKR 5,744</span><span class="arrow">→</span><span class="rev">PKR 52,811</span>
+        </div>
+      </div>
+
+      <div class="case-card reveal">
+        <div class="case-index">CS / 03 — RECORD ROAS</div>
+        <h3>Record-Breaking ROAS Campaign</h3>
+        <div class="case-metric-row"><span class="case-metric-label">ROAS</span><span class="case-metric-val gold">11.45x</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Purchases</span><span class="case-metric-val">30 @ Rs 177</span></div>
+        <div class="flow-line">
+          <span class="spend">Rs 5,315</span><span class="arrow">→</span><span class="rev">Rs 60,870</span>
+        </div>
+      </div>
+
+      <div class="case-card reveal">
+        <div class="case-index">CS / 04 — E-COMMERCE</div>
+        <h3>7-Day E-commerce Scaling Sprint</h3>
+        <div class="case-metric-row"><span class="case-metric-label">Total sales</span><span class="case-metric-val green">$4,600+</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Net profit</span><span class="case-metric-val green">$3,300+</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Orders</span><span class="case-metric-val">36</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Ad costs</span><span class="case-metric-val">$232</span></div>
+      </div>
+
+      <div class="case-card reveal">
+        <div class="case-index">CS / 05 — LAUNCH</div>
+        <h3>New Store Launch</h3>
+        <div class="case-metric-row"><span class="case-metric-label">Result</span><span class="case-metric-val">Consistent hourly orders</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Timeframe</span><span class="case-metric-val gold">Within 48 hours</span></div>
+      </div>
+
+      <div class="case-card reveal">
+        <div class="case-index">CS / 06 — HIGH-TICKET</div>
+        <h3>High-Ticket Sales Funnel</h3>
+        <div class="case-metric-row"><span class="case-metric-label">Order value</span><span class="case-metric-val green">$199+ daily</span></div>
+        <div class="case-metric-row"><span class="case-metric-label">Traffic quality</span><span class="case-metric-val">Premium, conversion-ready</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="testimonials">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">Client Feedback</span>
+      <h2>What it's like on the other side of the dashboard.</h2>
+      <p>Placeholder testimonials — swap these for real client quotes or screenshots once you have a few on record.</p>
+    </div>
+
+    <div class="testimonial-grid">
+      <div class="testimonial-card reveal">
+        <div>
+          <div class="quote-mark">"</div>
+          <p class="testimonial-text">Our ROAS went from inconsistent to over 9x within weeks. Reporting was clear and every decision was backed by numbers, not guesswork.</p>
+        </div>
+        <div class="testimonial-footer">
+          <div class="testimonial-avatar">SK</div>
+          <div>
+            <div class="testimonial-name">Founder</div>
+            <div class="testimonial-role">Skincare DTC Brand</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal">
+        <div>
+          <div class="quote-mark">"</div>
+          <p class="testimonial-text">We handed him a brand-new store with zero data. Within 48 hours we had consistent hourly orders coming in. That kind of speed is rare.</p>
+        </div>
+        <div class="testimonial-footer">
+          <div class="testimonial-avatar">EC</div>
+          <div>
+            <div class="testimonial-name">Store Owner</div>
+            <div class="testimonial-role">E-commerce Launch</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal">
+        <div>
+          <div class="quote-mark">"</div>
+          <p class="testimonial-text">Straightforward and numbers-driven, no fluff. He tells you what's working and kills what isn't, fast, and the budget never feels wasted.</p>
+        </div>
+        <div class="testimonial-footer">
+          <div class="testimonial-avatar">CB</div>
+          <div>
+            <div class="testimonial-name">Marketing Lead</div>
+            <div class="testimonial-role">Coaching / SaaS Brand</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">Capabilities</span>
+      <h2>What's under the hood of every campaign.</h2>
+    </div>
+
+    <div class="skills-layout">
+      <div class="skill-list reveal">
+        <div class="skill-row"><span class="name"><span class="n">01</span>Performance Marketing</span></div>
+        <div class="skill-row"><span class="name"><span class="n">02</span>Meta Ads Campaign Management</span></div>
+        <div class="skill-row"><span class="name"><span class="n">03</span>Google Ads Campaign Management</span></div>
+        <div class="skill-row"><span class="name"><span class="n">04</span>E-commerce Scaling</span></div>
+        <div class="skill-row"><span class="name"><span class="n">05</span>Budget Optimization</span></div>
+        <div class="skill-row"><span class="name"><span class="n">06</span>Audience Targeting &amp; Retargeting</span></div>
+        <div class="skill-row"><span class="name"><span class="n">07</span>A/B Testing &amp; Creative Optimization</span></div>
+        <div class="skill-row"><span class="name"><span class="n">08</span>Conversion Tracking (CPA / ROAS)</span></div>
+        <div class="skill-row"><span class="name"><span class="n">09</span>Analytics &amp; Reporting</span></div>
+      </div>
+
+      <div class="reveal">
+        <span class="section-tag" style="margin-bottom:24px;">Tools &amp; Platforms</span>
+        <div class="tools-cloud">
+          <span class="tool-chip">Meta Ads Manager</span>
+          <span class="tool-chip">Google Ads</span>
+          <span class="tool-chip">Google Analytics</span>
+          <span class="tool-chip">Shopify</span>
+          <span class="tool-chip">WooCommerce</span>
+          <span class="tool-chip">Canva</span>
+          <span class="tool-chip">CapCut</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-tag">Background</span>
+      <h2>Education &amp; certifications.</h2>
+    </div>
+
+    <div class="edu-grid">
+      <div class="edu-card reveal">
+        <h4>BS Computer Science</h4>
+        <div class="school">NFC Institute of Engineering &amp; Technology, Multan</div>
+        <div class="years">2022 — 2026</div>
+      </div>
+
+      <div class="reveal">
+        <div class="cert-item">
+          <span class="cert-name">Digital Marketing Foundations</span>
+          <span class="cert-issuer">LinkedIn Learning</span>
+        </div>
+        <div class="cert-item">
+          <span class="cert-name">Fundamentals of Digital Marketing</span>
+          <span class="cert-issuer">Google</span>
+        </div>
+        <div class="cert-item">
+          <span class="cert-name">Advanced Google Ads</span>
+          <span class="cert-issuer">LinkedIn Learning</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="contact-section" id="contact">
+  <div class="wrap contact-inner reveal">
+    <span class="section-tag">Get in touch</span>
+    <h2>Got a budget you want turned into revenue?</h2>
+    <p>I take on a limited number of accounts at a time so every campaign gets full attention. Send the brief, I'll send back a plan.</p>
+    <div class="contact-ctas">
+      <a href="mailto:hamzafida.uk@gmail.com" class="btn btn-primary">hamzafida.uk@gmail.com</a>
+      <a href="https://www.linkedin.com/in/hamza-fida-560b53365?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener" class="btn btn-outline">LinkedIn ↗</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 HAMZA FIDA — PERFORMANCE MARKETER</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold:0.15 });
+  revealEls.forEach(el=>io.observe(el));
+
+  // Animated counters
+  const counters = document.querySelectorAll('.counter');
+  const animateCounter = (el)=>{
+    const target = parseFloat(el.getAttribute('data-target'));
+    const decimals = parseInt(el.getAttribute('data-decimals')) || 0;
+    const duration = 1600;
+    const start = performance.now();
+    const step = (now)=>{
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = target * eased;
+      el.textContent = decimals > 0
+        ? value.toFixed(decimals)
+        : Math.floor(value).toLocaleString('en-US');
+      if(progress < 1){ requestAnimationFrame(step); }
+      else {
+        el.textContent = decimals > 0 ? target.toFixed(decimals) : target.toLocaleString('en-US');
+      }
+    };
+    requestAnimationFrame(step);
+  };
+  const counterIO = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        animateCounter(e.target);
+        counterIO.unobserve(e.target);
+      }
+    });
+  }, { threshold:0.5 });
+  counters.forEach(c=>counterIO.observe(c));
+
+  // Mobile menu toggle
+  const menuBtn = document.getElementById('menuBtn');
+  const navLinks = document.getElementById('navLinks');
+  const navOverlay = document.getElementById('navOverlay');
+
+  const closeMenu = ()=>{
+    menuBtn.classList.remove('active');
+    navLinks.classList.remove('open');
+    navOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+  };
+  const openMenu = ()=>{
+    menuBtn.classList.add('active');
+    navLinks.classList.add('open');
+    navOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  };
+  menuBtn.addEventListener('click', ()=>{
+    menuBtn.classList.contains('active') ? closeMenu() : openMenu();
+  });
+  navOverlay.addEventListener('click', closeMenu);
+  document.querySelectorAll('[data-nav]').forEach(link=>{
+    link.addEventListener('click', closeMenu);
+  });
+
+  // Scroll progress bar + back-to-top visibility
+  const scrollProgress = document.getElementById('scrollProgress');
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', ()=>{
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgress.style.width = pct + '%';
+    backToTop.classList.toggle('show', scrollTop > 600);
+  });
+  backToTop.addEventListener('click', ()=>{
+    window.scrollTo({ top:0, behavior:'smooth' });
+  });
+
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('section[id], .stats-bar[id]');
+  const navAnchors = document.querySelectorAll('.nav-links a[href^="#"]');
+  const navIO = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        navAnchors.forEach(a=>a.classList.remove('active-link'));
+        const match = document.querySelector('.nav-links a[href="#' + entry.target.id + '"]');
+        if(match) match.classList.add('active-link');
+      }
+    });
+  }, { rootMargin:'-40% 0px -50% 0px' });
+  sections.forEach(sec=>navIO.observe(sec));
+</script>
+
+</body>
+</html>
